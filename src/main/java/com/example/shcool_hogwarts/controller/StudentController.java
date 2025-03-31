@@ -9,21 +9,32 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Collection;
+import java.util.Comparator;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.LongStream;
 
 @RestController
 @RequestMapping("/student")
 @Tag(name = "Контроллер студентов", description = "Контроллеры для управления методами класса студент")
 public class StudentController {
 
+    private static final Logger log = LoggerFactory.getLogger(StudentController.class);
     private final StudentService studentService;
 
     public StudentController(StudentService studentService) {
         this.studentService = studentService;
+    }
+
+    private static String apply(Student student) {
+        return student.getName().toUpperCase();
     }
 
     /**
@@ -163,8 +174,57 @@ public class StudentController {
      * @return статус 200, последние 5 студентов по идентификатору
      */
     @GetMapping("/last-five")
-    @Operation (summary = "SQL запрос - получение последних 5 студентов по идентификатору")
+    @Operation(summary = "SQL запрос - получение последних 5 студентов по идентификатору")
     public ResponseEntity<Page<StudentProjection>> lastFiveStudents() {
         return ResponseEntity.ok(studentService.findLastFiveStudents());
+    }
+
+    /**
+     * @return список студентов в формате JSON, где имя начинается на "а" по алфавиту
+     */
+    @GetMapping("/namesStartingWithA") //toDo test
+    @Operation(summary = "список студентов в формате JSON, где имя начинается на А по алфавиту")
+    public List<Student> getStudentNamesStartingWithA() {
+        return studentService.findAllStudent()
+                .stream()
+                .filter(student -> student.getName().toLowerCase().startsWith("а"))
+                .peek(student -> student.setName(student.getName().toUpperCase()))
+                .sorted(Comparator.comparing(Student::getName))
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * @return средний возраст всех студентов
+     */
+    @GetMapping("/averageAge") //toDo test
+    @Operation(summary = "средний возраст всех студентов")
+    public double getAverageStudentAge() {
+        return studentService.findAllStudent()
+                .stream()
+                .mapToInt(Student::getAge)
+                .average()
+                .orElse(0);
+    }
+
+    @GetMapping("/sumParallel")
+    public long calculateSumParallel() {
+        long startTime = System.nanoTime();
+        long sum = LongStream.rangeClosed(1, 1_000_000)
+                .parallel()
+                .sum();
+        long endTime = System.nanoTime();
+        long duration = endTime - startTime;
+        log.info("Parallel sum calculated in {} ns", duration);
+        return sum; //Parallel sum calculated in 4712800 ns
+    }
+
+    @GetMapping("/sumSequential")
+    public long calculateSumSequential() {
+        long startTime = System.nanoTime();
+        long n = 1_000_000;
+        long endTime = System.nanoTime();
+        long duration = endTime - startTime;
+        log.info("Sequential sum calculated in {} ns", duration);
+        return n * (n + 1) / 2; // Sequential sum calculated in 400 ns
     }
 }

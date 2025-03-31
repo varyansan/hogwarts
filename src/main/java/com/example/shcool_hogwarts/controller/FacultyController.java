@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Collection;
+import java.util.Comparator;
 
 @RestController
 @RequestMapping("/faculty")
@@ -111,5 +112,18 @@ public class FacultyController {
             })
     public Collection<Student> getStudentsByFaculty(@PathVariable Long id) {
         return facultyService.getStudentsByFaculty(id);
+    }
+
+    /**
+     * @return возвращает самое длинное название факультета
+     */
+    @GetMapping("/longestName")
+    @Operation(summary = "возвращает самое длинное название факультета")
+    public String getLongestFacultyName() {
+        return facultyService.findAllFaculty()
+                .stream()
+                .max(Comparator.comparingInt(faculty -> faculty.getName().length()))
+                .map(Faculty::getName)
+                .orElse("");
     }
 }
