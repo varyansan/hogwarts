@@ -2,9 +2,15 @@ package com.example.shcool_hogwarts.controller;
 import com.example.shcool_hogwarts.model.Avatar;
 import com.example.shcool_hogwarts.service.AvatarService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -103,4 +109,28 @@ public class AvatarController {
             }
         }
     }
+    /**
+     * Получение списка аватаров с пагинацией
+     *
+     * @param pageNumber Номер страницы
+     * @param pageSize   Размер страницы
+     * @return ResponseEntity с Page&lt;Avatar&gt;- содержит список аватарок и информацию о пагинации.
+     * Возвращает 200 OK с данными или 500 в случае ошибки.
+     */
+    @GetMapping("/pageable")
+    @Operation(summary = "Получение списка аватаров с пагинацией", description = "Возвращает список аватаров с учетом пагинации.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Успешное получение списка аватаров",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = Page.class))),
+            @ApiResponse(responseCode = "500", description = "Внутренняя ошибка сервера")
+    })
+    public ResponseEntity<Page<Avatar>> getAllAvatars(
+            @RequestParam(defaultValue = "0") int pageNumber,
+            @RequestParam(defaultValue = "10") int pageSize
+    ) {
+        Pageable pageable = PageRequest.of(pageNumber, pageSize);
+        return ResponseEntity.ok(avatarService.getAllAvatars(pageable));
+    }
 }
+

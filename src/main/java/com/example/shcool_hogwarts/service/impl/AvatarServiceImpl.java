@@ -8,6 +8,8 @@ import com.example.shcool_hogwarts.repositories.StudentRepository;
 import com.example.shcool_hogwarts.service.AvatarService;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -71,5 +73,10 @@ public class AvatarServiceImpl implements AvatarService {
         } else {
             return null;
         }
+    }
+
+    @Override
+    public Page<Avatar> getAllAvatars(Pageable pageable) {
+        return avatarRepository.findAll(pageable);
     }
 }
