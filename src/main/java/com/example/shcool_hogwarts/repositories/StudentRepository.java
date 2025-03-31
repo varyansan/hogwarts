@@ -15,6 +15,8 @@ public interface StudentRepository extends JpaRepository<Student, Long> {
 
     List<Student> findAllByFaculty(Faculty faculty);
 
+    List <Student> findByNameContainsIgnoreCase(String name);
+
     @Query(value = "SELECT COUNT(*) FROM Student", nativeQuery = true)
     long countAllStudents();
 
