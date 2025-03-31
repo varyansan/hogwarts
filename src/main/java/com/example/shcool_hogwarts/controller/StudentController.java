@@ -3,6 +3,7 @@ package com.example.shcool_hogwarts.controller;
 import com.example.shcool_hogwarts.model.Faculty;
 import com.example.shcool_hogwarts.model.Student;
 import com.example.shcool_hogwarts.model.StudentProjection;
+import com.example.shcool_hogwarts.repositories.StudentRepository;
 import com.example.shcool_hogwarts.service.StudentService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -28,9 +29,11 @@ public class StudentController {
 
     private static final Logger log = LoggerFactory.getLogger(StudentController.class);
     private final StudentService studentService;
+    private final StudentRepository studentRepository;
 
-    public StudentController(StudentService studentService) {
+    public StudentController(StudentService studentService, StudentRepository studentRepository) {
         this.studentService = studentService;
+        this.studentRepository = studentRepository;
     }
 
     private static String apply(Student student) {
@@ -206,25 +209,20 @@ public class StudentController {
                 .orElse(0);
     }
 
-    @GetMapping("/sumParallel")
-    public long calculateSumParallel() {
-        long startTime = System.nanoTime();
-        long sum = LongStream.rangeClosed(1, 1_000_000)
+    @GetMapping("/sum")
+    public long calculateSum() {
+        return LongStream.rangeClosed(1, 1_000_000)
                 .parallel()
                 .sum();
-        long endTime = System.nanoTime();
-        long duration = endTime - startTime;
-        log.info("Parallel sum calculated in {} ns", duration);
-        return sum; //Parallel sum calculated in 4712800 ns
     }
 
-    @GetMapping("/sumSequential")
-    public long calculateSumSequential() {
-        long startTime = System.nanoTime();
-        long n = 1_000_000;
-        long endTime = System.nanoTime();
-        long duration = endTime - startTime;
-        log.info("Sequential sum calculated in {} ns", duration);
-        return n * (n + 1) / 2; // Sequential sum calculated in 400 ns
+    @GetMapping("/print-parallel")
+    public void printParallel() {
+        studentService.printParallel();
+    }
+
+    @GetMapping("/print-synchronized")
+    public void printSynchronized() {
+        studentService.printSynchronized();
     }
 }

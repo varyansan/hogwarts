@@ -29,4 +29,8 @@ public interface StudentService {
     Double getAverageAge();
 
     Page<StudentProjection> findLastFiveStudents();
+
+    void printParallel();
+
+    void printSynchronized();
 }
